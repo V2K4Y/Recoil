@@ -1,5 +1,6 @@
 import axios from 'axios'
-import { atom, selector } from 'recoil'
+import { atom, atomFamily, selector, selectorFamily } from 'recoil'
+import { TODO } from './todo';
 
 export const notificationsAtom = atom({
     key: "notifcationsAtom",
@@ -12,33 +13,31 @@ export const notificationsAtom = atom({
     })
 })
 
-export const jobsAtom = atom({
-    key: 'jobsAtom',
-    default: 1,
-});
-
-export const networkAtom = atom({
-    key: 'networkAtom',
-    default: 102,
-});
-
-export const messageAtom = atom({
-    key: 'messageAtom',
-    default: 0,
-});
-
-export const notificationAtom = atom({
-    key: 'notificationAtom',
-    default: 12,
-});
-
 export const totalNotificationSelector = selector({
     key: "totalNotificationSelector",
     get: ({get}) => {
-        const jobs = get(jobsAtom);
-        const network = get(networkAtom);
-        const message = get(messageAtom);
-        const notifcation = get(notificationAtom);
-        return jobs + network + message + notifcation;
+        const notificationCount = get(notificationsAtom);
+        return notificationCount.jobs + notificationCount.network + notificationCount.messages + notificationCount.notifications;
     }
+})
+
+export const todoAtomFamily = atomFamily({
+    key: 'todoAtomFamily',
+    default: id => {
+        return TODO.find(x => x.id == id);
+    }
+})
+
+export const todoAtomFamilys = atomFamily({
+    key: 'todoAtomFamilys',
+    default: selectorFamily({
+        key: 'todoAtomFamilysSelector',
+        get: (id) => async () => {
+            await new Promise(r => setTimeout(r, 3000));
+            // throw new Error('Error!')
+            const res = await axios.get(`http://localhost:3001/todos?id=${id}`);
+            console.log(res.data);
+            return res.data;
+        }
+    })
 })
